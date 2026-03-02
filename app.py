@@ -121,7 +121,7 @@ async function readText(){
   document.getElementById('btnRead').disabled=true;
   document.getElementById('btnStop').disabled=false;
   try{
-    const resp=await fetch('/tts?text='+encodeURIComponent(text));
+    const resp=await fetch('/tts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
     if(!resp.ok){const e=await resp.text();throw new Error(e);}
     const blob=await resp.blob();
     const url=URL.createObjectURL(blob);
@@ -171,9 +171,10 @@ document.getElementById('teluguText').addEventListener('input',function(){
 def index():
     return render_template_string(HTML)
 
-@app.route('/tts')
+@app.route('/tts', methods=['POST'])
 def tts():
-    text = request.args.get('text', '').strip()
+    data = request.get_json()
+    text = (data.get('text', '') if data else '').strip()
     if not text:
         return Response('No text provided', status=400)
     if len(text) > 5000:
